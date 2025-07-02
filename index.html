@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>MBTI 測驗</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      text-align: center;
+      background-color: #f4f4f4;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .question {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .result {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>MBTI 性格測驗</h1>
+  <div class="question" id="question"></div>
+  <button class="btn" id="option1" onclick="answer(1)"></button>
+  <button class="btn" id="option2" onclick="answer(2)"></button>
+  <div class="result" id="result"></div>
+
+  <script>
+    const questions = [
+      ["你更喜歡哪種活動？", "參加聚會", "獨處讀書", "E", "I"],
+      ["你在社交場合中？", "喜歡認識新朋友", "只與熟人互動", "E", "I"],
+      ["你更傾向依賴？", "直覺和靈感", "實際的經驗", "N", "S"],
+      ["你處理資訊時？", "注重大局", "關注細節", "N", "S"],
+      ["你做決定時偏向？", "理性邏輯", "重視感受", "T", "F"],
+      ["你處理衝突時？", "直接指出問題", "避免衝突", "T", "F"],
+      ["你更喜歡？", "有計畫的生活", "隨興的生活", "J", "P"],
+      ["當計畫改變時？", "覺得不自在", "能快速適應", "J", "P"]
+    ];
+
+    let index = 0;
+    let scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+    function showQuestion() {
+      if (index < questions.length) {
+        const q = questions[index];
+        document.getElementById("question").textContent = `Q${index + 1}: ${q[0]}`;
+        document.getElementById("option1").textContent = q[1];
+        document.getElementById("option2").textContent = q[2];
+      } else {
+        showResult();
+      }
+    }
+
+    function answer(choice) {
+      const q = questions[index];
+      const trait = choice === 1 ? q[3] : q[4];
+      scores[trait]++;
+      index++;
+      showQuestion();
+    }
+
+    function showResult() {
+      const result =
+        (scores.E >= scores.I ? "E" : "I") +
+        (scores.S >= scores.N ? "S" : "N") +
+        (scores.T >= scores.F ? "T" : "F") +
+        (scores.J >= scores.P ? "J" : "P");
+      document.getElementById("question").style.display = "none";
+      document.getElementById("option1").style.display = "none";
+      document.getElementById("option2").style.display = "none";
+      document.getElementById("result").textContent = `你的 MBTI 類型是：${result}`;
+    }
+
+    showQuestion();
+  </script>
+
+</body>
+</html>
