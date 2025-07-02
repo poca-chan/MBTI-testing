@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>紫微斗數命盤</title>
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #f4f4f8;
+      padding: 30px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .input-area, .result-area {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .input-area label, .input-area input {
+      display: block;
+      margin: 10px 0;
+    }
+    .chart {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 5px;
+      margin-top: 20px;
+    }
+    .cell {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      min-height: 100px;
+      background-color: #fff;
+      text-align: left;
+      font-size: 14px;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #d62728;
+    }
+    .title {
+      font-weight: bold;
+    }
+    .submit-btn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>紫微斗數命盤排盤</h1>
+  <div class="input-area">
+    <label for="birth">請輸入生日（格式: YYYY-MM-DDTHH:MM）</label>
+    <input type="datetime-local" id="birth" required>
+    <button class="submit-btn" onclick="generateChart()">生成命盤</button>
+  </div>
+
+  <div class="result-area" id="result" style="display:none">
+    <h2>命盤顯示</h2>
+    <div id="birthInfo"></div>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <script>
+    const earthBranches = ['子', '丑', '寅', '卯', '辰', '巳',
+                           '午', '未', '申', '酉', '戌', '亥'];
+    const palaces = ["命宮", "兄弟宮", "夫妻宮", "子女宮", "財帛宮", "疾厄宮",
+                     "遷移宮", "僕役宮", "官祿宮", "田宅宮", "福德宮", "父母宮"];
+    const stars = ["紫微", "天機", "太陽", "武曲", "天同", "廉貞",
+                  "天府", "太陰", "貪狼", "巨門", "天相", "天梁", "七殺", "破軍"]
+    const transforms = {
+      "甲": {"祿": "廉貞", "權": "天機", "科": "太陰", "忌": "天同"},
+      "乙": {"祿": "天機", "權": "紫微", "科": "天梁", "忌": "太陽"},
+      "丙": {"祿": "天同", "權": "文昌", "科": "天機", "忌": "廉貞"},
+      "丁": {"祿": "太陰", "權": "天梁", "科": "紫微", "忌": "巨門"},
+      "戊": {"祿": "貪狼", "權": "太陽", "科": "文曲", "忌": "天機"},
+      "己": {"祿": "武曲", "權": "天同", "科": "廉貞", "忌": "太陰"},
+      "庚": {"祿": "太陽", "權": "天機", "科": "天同", "忌": "文曲"},
+      "辛": {"祿": "巨門", "權": "天梁", "科": "天機", "忌": "太陽"},
+      "壬": {"祿": "天機", "權": "天同", "科": "文曲", "忌": "貪狼"},
+      "癸": {"祿": "太陰", "權": "貪狼", "科": "武曲", "忌": "天梁"}
+    };
+
+    function getTiangan(year) {
+      const tianganCycle = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+      return tianganCycle[(year - 4) % 10];
+    }
+
+    function generateChart() {
+      const input = document.getElementById('birth').value;
+      if (!input) return alert("請輸入生日");
+      const birth = new Date(input);
+      const year = birth.getFullYear();
+      const month = birth.getMonth() + 1;
+      const hour = birth.getHours();
+      const tiangan = getTiangan(year);
+      const mingIndex = (2 * (month - 1) + Math.floor(hour / 2)) % 12;
+      const shengongOffset = {23:4,1:4,3:3,5:3,7:2,9:2,11:1,13:1,15:0,17:0,19:11,21:11};
+      const shenIndex = (mingIndex + (shengongOffset[hour] || 0)) % 12;
+
+      // 填入十四主星順排 (簡化)
+      const palaceStars = Array.from({length: 12}, () => []);
+      for (let i = 0; i < stars.length; i++) {
+        palaceStars[i % 12].push(stars[i]);
+      }
+
+      // 計算四化
+      const four = transforms[tiangan];
+      const transformMap = Array.from({length: 12}, () => []);
+      palaceStars.forEach((arr, i) => {
+        arr.forEach(s => {
+          for (const [key, val] of Object.entries(four)) {
+            if (val === s) {
+              transformMap[i].push(`${s}（化${key}）`);
+            }
+          }
+        });
+      });
+
+      // 顯示結果
+      document.getElementById("result").style.display = "block";
+      document.getElementById("birthInfo").innerText = `${year} 年生，天干：${tiangan}年`;
+
+      const chartDiv = document.getElementById("chart");
+      chartDiv.innerHTML = "";
+      for (let i = 0; i < 12; i++) {
+        const box = document.createElement("div");
+        box.className = "cell";
+        box.innerHTML = `<div class='title'>${earthBranches[i]}宮（${palaces[i]}）` +
+                        `${i === mingIndex ? "<span class='highlight'>【命】</span>" : ""}` +
+                        `${i === shenIndex ? "<span class='highlight'>【身】</span>" : ""}</div>`;
+        if (palaceStars[i].length)
+          box.innerHTML += `<div>主星：${palaceStars[i].join('、')}</div>`;
+        if (transformMap[i].length)
+          box.innerHTML += `<div>四化：${transformMap[i].join('、')}</div>`;
+        chartDiv.appendChild(box);
+      }
+    }
+  </script>
+</body>
+</html>
